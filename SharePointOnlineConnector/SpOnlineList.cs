@@ -9,11 +9,21 @@ namespace SharePointOnlineConnector
 {
     public class SpOnlineList<T> where T : class, new()
     {
-        private readonly Connector connector;
+        private readonly SharePointContext connector;
         private readonly string listName;
         private readonly IEnumerable<PropertyAttribute> attributesOfT;
 
-        public SpOnlineList(Connector connector, string listName)
+        public SpOnlineList(SharePointContext connector)
+        {
+            this.connector = connector;
+            var attribute = typeof(T).GetCustomAttributes(typeof(SpListAttribute), false)?.Cast<SpListAttribute>()?.SingleOrDefault();
+            this.listName = $"{typeof(T).Name}s";
+            if (!string.IsNullOrWhiteSpace(attribute?.ListName))
+                this.listName = attribute.ListName;
+            attributesOfT = PropertyAttribute.GetPropertyAttributesForT(typeof(T));
+        }
+
+        public SpOnlineList(SharePointContext connector, string listName)
         {
             this.connector = connector;
             this.listName = listName;

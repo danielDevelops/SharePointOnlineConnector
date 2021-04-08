@@ -8,23 +8,31 @@ namespace SharePointOnlineConnector
 {
     public static class Extensions
     {
-        public static SpOnlineList<T> InitSpOnlineListOfT<T>(this Connector connector, string listName) where T : class, new()
-            => new SpOnlineList<T>(connector, listName);
         public static string WrapCaml(this string caml, string wrapper)
             => $"<{wrapper}>{caml}</{wrapper}>";
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class ItemAttribute : Attribute
+    public class SpPropertyAttribute : Attribute
     {
         public string FieldName;
         public bool IsEmail;
         public bool Ignore;
-        public ItemAttribute(string fieldName)
+        public SpPropertyAttribute(string fieldName)
         {
             FieldName = fieldName;
             IsEmail = false;
             Ignore = false;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class SpListAttribute : Attribute
+    {
+        public string ListName;
+        public SpListAttribute(string listName)
+        {
+            ListName = listName;
         }
     }
 }

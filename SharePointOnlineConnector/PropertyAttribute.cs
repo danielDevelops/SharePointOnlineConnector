@@ -20,7 +20,7 @@ namespace SharePointOnlineConnector
             var attributes = new List<PropertyAttribute>();
             foreach (var item in type.GetProperties())
             {
-                var attr = item.GetCustomAttributes(typeof(ItemAttribute), false)?.Cast<ItemAttribute>()?.SingleOrDefault();
+                var attr = item.GetCustomAttributes(typeof(SpPropertyAttribute), false)?.Cast<SpPropertyAttribute>()?.SingleOrDefault();
                 if (attr?.Ignore == true)
                     continue;
                 attributes.Add(new PropertyAttribute
