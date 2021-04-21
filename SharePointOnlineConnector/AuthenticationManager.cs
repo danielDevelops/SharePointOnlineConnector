@@ -1,13 +1,17 @@
 ﻿using Microsoft.SharePoint.Client;
 using System;
 using System.Collections.Concurrent;
+using System.Dynamic;
 using System.Net.Http;
 using System.Security;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Newtonsoft.Json;
+using System.ComponentModel;
+using Newtonsoft.Json.Converters;
+using System.Diagnostics;
 
 namespace SharePointOnlineConnector
 {
@@ -39,8 +43,16 @@ namespace SharePointOnlineConnector
 
             context.ExecutingWebRequest += (sender, e) =>
             {
-                var accessToken = EnsureAccessTokenAsync(new Uri($"{web.Scheme}://{web.DnsSafeHost}"), userPrincipalName, new System.Net.NetworkCredential(string.Empty, userPassword).Password).GetAwaiter().GetResult();
-                e.WebRequestExecutor.RequestHeaders["Authorization"] = "Bearer " + accessToken;
+                try
+                {
+                    var accessToken = EnsureAccessTokenAsync(new Uri($"{web.Scheme}://{web.DnsSafeHost}"), userPrincipalName, new System.Net.NetworkCredential(string.Empty, userPassword).Password).GetAwaiter().GetResult();
+                    e.WebRequestExecutor.RequestHeaders["Authorization"] = "Bearer " + accessToken;
+                }
+                catch (AuthenticationException ex)
+                {
+                    Debug.WriteLine(ex);
+                    throw;
+                }
             };
 
             return context;
@@ -128,8 +140,12 @@ namespace SharePointOnlineConnector
                     return response.Result.Content.ReadAsStringAsync().Result;
                 }).ConfigureAwait(false);
 
-                var tokenResult = JsonSerializer.Deserialize<JsonElement>(result);
-                var token = tokenResult.GetProperty("access_token").GetString();
+                dynamic tokenResult = JsonConvert.DeserializeObject<ExpandoObject>(result, new ExpandoObjectConverter());
+                if (Extensions.DynamicHasProperty(tokenResult, "error") && !string.IsNullOrWhiteSpace(tokenResult.error))
+                {
+                    throw new AuthenticationException(username, result);
+                }
+                var token = tokenResult.access_token;
                 return token;
             }
         }

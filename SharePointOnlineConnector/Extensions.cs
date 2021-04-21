@@ -8,6 +8,9 @@ namespace SharePointOnlineConnector
 {
     public static class Extensions
     {
+        internal static bool DynamicHasProperty(dynamic prop, string property)
+            => ((IDictionary<string, object>)prop).ContainsKey(property);
+
         public static string WrapCaml(this string caml, string wrapper)
             => $"<{wrapper}>{caml}</{wrapper}>";
     }

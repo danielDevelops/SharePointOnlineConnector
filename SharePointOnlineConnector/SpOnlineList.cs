@@ -80,7 +80,11 @@ namespace SharePointOnlineConnector
             foreach (var prop in attributesOfT)
             {
                 var propVal = prop.Property.GetValue(value);
-                if (propVal == null)
+                if (propVal == null ||
+                  prop.FieldName == "Author" ||
+                  prop.FieldName == "Editor" ||
+                  prop.FieldName == "Created" ||
+                  prop.FieldName == "Modified")
                     continue;
                 newItem[prop.ColumnName] = propVal;
             }
